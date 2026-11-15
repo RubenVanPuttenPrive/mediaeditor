@@ -138,7 +138,7 @@ const en = {
   'about.emoji': 'Emoji graphics: Twemoji by Twitter, Inc. and other contributors, licensed under CC-BY 4.0.',
   'about.emojiData': 'Emoji names and keywords: Emojibase, MIT License.',
   'about.stickers': 'Stickers: made for MediaEditor, released into the public domain (CC0 1.0).',
-  'about.fonts': 'Fonts: Inter, Bebas Neue, Pacifico, Permanent Marker and Roboto Slab, SIL Open Font License 1.1 (Roboto Slab: Apache License 2.0).',
+  'about.fonts': 'Fonts: Bricolage Grotesque, Inter, Bebas Neue and Pacifico (SIL Open Font License 1.1); Permanent Marker and Roboto Slab (Apache License 2.0).',
   'about.code': 'Built with Mediabunny (MPL-2.0), ffmpeg.wasm (MIT, core LGPL/GPL), React (MIT) and Zustand (MIT).',
   'about.music': 'Included music',
   'about.trackCredit': '{title}: composed and synthesised for MediaEditor, released into the public domain.',

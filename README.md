@@ -103,7 +103,9 @@ committed).
   emulation. The tests import a sample clip, split it, add two emoji, a sticker and music with a
   fade-out, export, and check with Mediabunny that the file is an MP4 with H.264 + AAC of the right
   size and duration. Desktop runs also cover keyboard shortcuts, undo/redo, autosave across reload,
-  and the ffmpeg fallback.
+  and the ffmpeg fallback. A content test (`tests/e2e/content.spec.ts`, needs `ffmpeg` on PATH)
+  exports at 1080p and decodes the result: the emoji and sticker must appear in the frame only
+  during their set times, and the music must be audible and fade out at the end.
 
 Emulation is not a real device: WebKit on Linux is not iOS Safari, and emulated phones have desktop
 memory and codecs. See *Device verification* below.
@@ -130,8 +132,8 @@ Gallery) and Windows (Chrome or Edge → Download → play in the Films & TV / M
 - **Music** (`public/music/`): four tracks synthesised from code by `scripts/make-music.py` for
   this project, no samples, [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/).
   No copyrighted music is bundled.
-- **Fonts:** Bricolage Grotesque, Inter, Bebas Neue, Pacifico and Permanent Marker (SIL OFL 1.1);
-  Roboto Slab (Apache 2.0). Bundled through Fontsource.
+- **Fonts:** Bricolage Grotesque, Inter, Bebas Neue and Pacifico (SIL OFL 1.1); Permanent Marker
+  and Roboto Slab (Apache 2.0). Bundled through Fontsource.
 - **Libraries:** Mediabunny and @mediabunny/aac-encoder (MPL-2.0), ffmpeg.wasm (MIT; the core is
   built from FFmpeg/x264, LGPL/GPL), React (MIT), Zustand (MIT), idb (ISC), Workbox (MIT).
 
