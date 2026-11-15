@@ -1,6 +1,7 @@
-// The timeline keeps the playhead fixed in the middle and slides the tracks underneath it, so on a
-// phone scrubbing is just dragging. Everything is driven by Pointer Events (touch-action: none):
-//   one finger/mouse on empty space → scrub;  two fingers → pinch zoom;  Ctrl+wheel → zoom
+// The timeline starts at the left edge and is zoomed so the whole edit fits the screen width; the
+// playhead moves across it and the view follows when zoomed in. Pointer Events (touch-action: none):
+//   tap or drag on the ruler / empty space → move the playhead (drag scrolls instead when zoomed in)
+//   two fingers → pinch zoom and scroll;  Ctrl+wheel → zoom;  wheel → scroll;  Fit → whole edit
 //   handles → trim;  mouse drag on an item, or touch-and-hold → move/reorder;  tap → select
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useEditor, useProject, getProject } from '../state/store';
@@ -16,13 +17,14 @@ import { MIN_CLIP } from '../model/time';
 const HOLD_MS = 350;
 const MOVE_SLOP = 8;
 
-type DragKind = 'pan' | 'pinch' | 'trim' | 'move' | 'pending';
+type DragKind = 'pan' | 'scrub' | 'pinch' | 'trim' | 'move' | 'pending';
 
 interface Drag {
   kind: DragKind;
   pointerId: number;
   pointerType: string;
   x0: number;
+  /** For pans: the view start when the drag began. */
   t0: number;
   itemId?: string;
   itemKind?: 'clip' | 'music' | 'overlay';
@@ -54,6 +56,9 @@ function tickStep(pps: number) {
   return steps.find((s) => s * pps >= 64) ?? 600;
 }
 
+/** Space kept free left and right of the tracks, so trim handles at the very start/end stay reachable. */
+const GUTTER = 24;
+
 export function Timeline() {
   const project = useProject();
   const media = useEditor((s) => s.media);
@@ -61,55 +66,108 @@ export function Timeline() {
   const selection = useEditor((s) => s.selection);
   const rootRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(360);
+  const playheadRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(0);
   const drag = useRef<Drag | null>(null);
   const pointers = useRef(new Map<number, number>());
-  const pinch = useRef<{ dist: number; pps: number } | null>(null);
+  const pinch = useRef<{ dist: number; pps: number; anchorTime: number; anchorX: number } | null>(null);
   const [moveOffset, setMoveOffset] = useState<{ id: string; dx: number } | null>(null);
+  /** Time at the left edge of the visible tracks. Kept outside React so panning and playback stay smooth. */
+  const viewStart = useRef(0);
+  /** While true the whole edit is zoomed to fit the screen width (until the user zooms themselves). */
+  const [fitted, setFitted] = useState(true);
   const duration = projectDuration(project);
   const lanes = useMemo(() => overlayLanes(project.overlays), [project.overlays]);
   const laneCount = Math.max(1, ...[...lanes.values()].map((l) => l + 1));
+  const usable = Math.max(1, width - 2 * GUTTER);
 
   useLayoutEffect(() => {
     const el = rootRef.current!;
     const ro = new ResizeObserver(() => setWidth(el.clientWidth));
     ro.observe(el);
+    setWidth(el.clientWidth);
     return () => ro.disconnect();
   }, []);
 
-  // The content slides under the fixed playhead. Updated outside React for smooth playback.
-  useEffect(() => {
-    const apply = (time: number, z: number) => {
-      if (contentRef.current) contentRef.current.style.transform = `translateX(${width / 2 - time * z}px)`;
-    };
-    const s = useEditor.getState();
-    apply(s.time, s.pxPerSec);
-    return useEditor.subscribe((st) => apply(st.time, st.pxPerSec));
-  }, [width]);
+  const maxViewStart = (z: number) => Math.max(0, duration - usable / z);
 
-  // Wheel: horizontal pan, Ctrl/Cmd (or trackpad pinch) zoom. Needs a non-passive listener.
+  /** Positions the tracks and the playhead. Keeps the playhead on screen while playing or stepping. */
+  const applyView = (follow: boolean) => {
+    const s = useEditor.getState();
+    const z = s.pxPerSec;
+    if (follow) {
+      const x = (s.time - viewStart.current) * z;
+      if (x > usable) viewStart.current = s.time - (usable * 0.25) / z;
+      else if (x < 0) viewStart.current = s.time - (usable * 0.75) / z;
+    }
+    viewStart.current = clamp(viewStart.current, 0, maxViewStart(z));
+    if (contentRef.current) contentRef.current.style.transform = `translateX(${GUTTER - viewStart.current * z}px)`;
+    if (playheadRef.current) playheadRef.current.style.transform = `translateX(${GUTTER + (s.time - viewStart.current) * z}px)`;
+  };
+
+  // Zoom to fit: the whole edit spans the timeline width, starting at the left edge.
+  useLayoutEffect(() => {
+    if (!fitted || width === 0) return;
+    useEditor.getState().setZoom(usable / Math.max(duration, 1));
+    viewStart.current = 0;
+  }, [fitted, width, duration, usable]);
+
+  // A new (empty) project goes back to the fitted view.
+  useEffect(() => {
+    if (duration === 0) setFitted(true);
+  }, [duration]);
+
+  useLayoutEffect(() => {
+    applyView(false);
+    return useEditor.subscribe((st, prev) => {
+      if (st.time !== prev.time) applyView(true);
+      else if (st.pxPerSec !== prev.pxPerSec) applyView(false);
+    });
+  });
+
+  /** Zooms while keeping the time under `anchorX` (px from the tracks' left edge) in place. */
+  const zoomTo = (z: number, anchorX?: number) => {
+    const s = useEditor.getState();
+    const ax = anchorX ?? clamp((s.time - viewStart.current) * s.pxPerSec, 0, usable);
+    const anchorTime = viewStart.current + ax / s.pxPerSec;
+    setFitted(false);
+    s.setZoom(z);
+    const nz = useEditor.getState().pxPerSec;
+    viewStart.current = anchorTime - ax / nz;
+    applyView(false);
+  };
+
+  const fit = () => {
+    setFitted(true);
+    const s = useEditor.getState();
+    s.setZoom(usable / Math.max(duration, 1));
+    viewStart.current = 0;
+    applyView(false);
+  };
+
+  // Wheel: Ctrl/Cmd (or trackpad pinch) zooms at the cursor; otherwise scrolls the view sideways.
   useEffect(() => {
     const el = rootRef.current!;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const s = useEditor.getState();
+      const x = e.clientX - el.getBoundingClientRect().left - GUTTER;
       if (e.ctrlKey || e.metaKey) {
-        s.setZoom(s.pxPerSec * Math.exp(-e.deltaY / 200));
+        zoomTo(s.pxPerSec * Math.exp(-e.deltaY / 200), x);
       } else {
-        pausePlayback();
         const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-        s.seek(s.time + d / s.pxPerSec);
+        viewStart.current += d / s.pxPerSec;
+        applyView(false);
       }
     };
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => el.removeEventListener('wheel', onWheel);
-  }, []);
+  });
 
-  const timeAtClientX = (clientX: number) => {
-    const r = rootRef.current!.getBoundingClientRect();
-    const s = useEditor.getState();
-    return s.time + (clientX - r.left - r.width / 2) / s.pxPerSec;
-  };
+  const xOf = (clientX: number) => clientX - rootRef.current!.getBoundingClientRect().left - GUTTER;
+  const timeAtClientX = (clientX: number) => viewStart.current + xOf(clientX) / useEditor.getState().pxPerSec;
+  /** True when the edit is wider than the screen, so dragging empty space scrolls instead of scrubbing. */
+  const canPan = () => maxViewStart(useEditor.getState().pxPerSec) > 0.01;
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (e.button > 0) return;
@@ -117,20 +175,27 @@ export function Timeline() {
     pointers.current.set(e.pointerId, e.clientX);
     const s = useEditor.getState();
     if (pointers.current.size === 2) {
-      // Pinch zoom: abandon whatever the first finger was doing.
+      // Pinch zoom around the point between the fingers: abandon whatever the first finger was doing.
       cancelDrag();
       const [a, b] = [...pointers.current.values()];
-      pinch.current = { dist: Math.abs(a - b) || 1, pps: s.pxPerSec };
+      const mid = xOf((a + b) / 2);
+      pinch.current = { dist: Math.abs(a - b) || 1, pps: s.pxPerSec, anchorX: mid, anchorTime: viewStart.current + mid / s.pxPerSec };
       drag.current = { kind: 'pinch', pointerId: e.pointerId, pointerType: e.pointerType, x0: e.clientX, t0: s.time, moved: true };
       return;
     }
     if (pointers.current.size > 2) return;
     const el = (e.target as HTMLElement).closest<HTMLElement>('[data-item], [data-handle]');
     const p = getProject();
+    const onRuler = !!(e.target as HTMLElement).closest('.ruler');
     const d: Drag = {
-      kind: 'pan', pointerId: e.pointerId, pointerType: e.pointerType, x0: e.clientX, t0: s.time, moved: false,
-      onRuler: !!(e.target as HTMLElement).closest('.ruler'),
+      kind: onRuler || !canPan() ? 'scrub' : 'pan', pointerId: e.pointerId, pointerType: e.pointerType, x0: e.clientX,
+      t0: viewStart.current, moved: false, onRuler,
     };
+    if (d.kind === 'scrub' && !el) {
+      // Scrubbing jumps straight to where you touch.
+      pausePlayback();
+      s.seek(timeAtClientX(e.clientX));
+    }
     if (el) {
       const id = el.dataset.id!;
       const kind = el.dataset.kind as Drag['itemKind'];
@@ -183,7 +248,14 @@ export function Timeline() {
     const s = useEditor.getState();
     if (d.kind === 'pinch') {
       const [a, b] = [...pointers.current.values()];
-      if (pinch.current && b !== undefined) s.setZoom(pinch.current.pps * (Math.abs(a - b) / pinch.current.dist));
+      const pc = pinch.current;
+      if (pc && b !== undefined) {
+        setFitted(false);
+        s.setZoom(pc.pps * (Math.abs(a - b) / pc.dist));
+        // Keep the time that was between the fingers under the fingers (also pans with two fingers).
+        viewStart.current = pc.anchorTime - xOf((a + b) / 2) / useEditor.getState().pxPerSec;
+        applyView(false);
+      }
       return;
     }
     if (e.pointerId !== d.pointerId) return;
@@ -196,10 +268,10 @@ export function Timeline() {
           d.kind = 'move';
           startMove(d);
         } else {
-          d.kind = 'pan';
+          d.kind = canPan() ? 'pan' : 'scrub';
         }
       }
-      if (d.kind === 'pan') pausePlayback();
+      if (d.kind === 'pan' || d.kind === 'scrub') pausePlayback();
     }
     if (!d.moved) return;
     const dt = dx / s.pxPerSec;
@@ -207,7 +279,10 @@ export function Timeline() {
     const m = d.itemId ? p.clips.find((c) => c.id === d.itemId) ?? p.music.find((c) => c.id === d.itemId) : undefined;
     const info: MediaInfo | undefined = m ? s.media[m.mediaId] : undefined;
     if (d.kind === 'pan') {
-      s.seek(d.t0 - dt);
+      viewStart.current = d.t0 - dt;
+      applyView(false);
+    } else if (d.kind === 'scrub') {
+      s.seek(timeAtClientX(e.clientX));
     } else if (d.kind === 'trim' && d.orig) {
       const o = d.orig;
       if (d.itemKind === 'clip') {
@@ -264,11 +339,12 @@ export function Timeline() {
           pausePlayback();
           s.seek(o.start + Math.min(0.5, o.duration / 2));
         }
-      }
-      else if (d.onRuler) {
+      } else {
+        // A tap on empty space moves the playhead there and clears the selection.
         pausePlayback();
         s.seek(timeAtClientX(e.clientX));
-      } else s.select(null);
+        if (!d.onRuler) s.select(null);
+      }
     }
     if (d.kind === 'trim' || d.kind === 'move') s.end();
     setMoveOffset(null);
@@ -282,8 +358,15 @@ export function Timeline() {
       pausePlayback();
       const step = e.shiftKey ? 1 : 1 / 30;
       s.seek(s.time + (e.key === 'ArrowLeft' ? -step : step));
-    } else if (e.key === '+' || e.key === '=') s.setZoom(s.pxPerSec * 1.25);
-    else if (e.key === '-') s.setZoom(s.pxPerSec / 1.25);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      s.seek(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      s.seek(duration);
+    } else if (e.key === '+' || e.key === '=') zoomTo(s.pxPerSec * 1.25);
+    else if (e.key === '-') zoomTo(s.pxPerSec / 1.25);
+    else if (e.key === '0') fit();
   };
 
   const starts = clipStarts(project.clips);
@@ -294,11 +377,14 @@ export function Timeline() {
 
   return (
     <div className="timeline-wrap">
-      <div className="timeline-zoom">
-        <button className="icon-btn small" aria-label={t('tool.zoomOut')} title={t('tool.zoomOut')}
-          onClick={() => useEditor.getState().setZoom(pps / 1.5)}><Icon name="zoomOut" size={18} /></button>
-        <button className="icon-btn small" aria-label={t('tool.zoomIn')} title={t('tool.zoomIn')}
-          onClick={() => useEditor.getState().setZoom(pps * 1.5)}><Icon name="zoomIn" size={18} /></button>
+      <div className="timeline-bar">
+        <button className="btn small-btn fit-btn" onClick={fit} disabled={fitted} title={`${t('tool.zoomFit')} (0)`}>
+          {t('tool.zoomFit')}
+        </button>
+        <button className="icon-btn small" aria-label={t('tool.zoomOut')} title={`${t('tool.zoomOut')} (−)`}
+          onClick={() => zoomTo(pps / 1.5)}><Icon name="zoomOut" size={18} /></button>
+        <button className="icon-btn small" aria-label={t('tool.zoomIn')} title={`${t('tool.zoomIn')} (+)`}
+          onClick={() => zoomTo(pps * 1.5)}><Icon name="zoomIn" size={18} /></button>
       </div>
       <div className="timeline" ref={rootRef} tabIndex={0} role="group" aria-label={t('track.timeline')}
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
@@ -328,7 +414,7 @@ export function Timeline() {
             ))}
           </div>
         </div>
-        <div className="playhead" aria-hidden="true"><span className="playhead-flag" /></div>
+        <div className="playhead" ref={playheadRef} aria-hidden="true"><span className="playhead-flag" /></div>
       </div>
     </div>
   );

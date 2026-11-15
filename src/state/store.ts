@@ -35,7 +35,8 @@ export interface EditorState {
   reset: () => void;
 }
 
-export const MIN_ZOOM = 4;
+/** Pixels per second. Low enough that a 10-minute edit still fits a 320 px phone screen. */
+export const MIN_ZOOM = 0.2;
 export const MAX_ZOOM = 400;
 
 export const useEditor = create<EditorState>()((set, get) => ({

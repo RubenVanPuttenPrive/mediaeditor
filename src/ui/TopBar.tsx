@@ -54,7 +54,11 @@ export function TopBar() {
         <button className="icon-btn" onClick={() => s.redo()} disabled={!canRedo(history)} aria-label={t('top.redo')} title={`${t('top.redo')} (Ctrl+Shift+Z)`}>
           <Icon name="redo" />
         </button>
-        <div className="segmented" role="radiogroup" aria-label={t('top.aspect')}>
+        <select className="aspect-select" aria-label={t('top.aspect')} value={aspect}
+          onChange={(e) => { const a = e.target.value as AspectRatio; s.apply((p) => ({ ...p, aspect: a })); }}>
+          {ASPECTS.map((a) => <option key={a} value={a}>{a}</option>)}
+        </select>
+        <div className="segmented aspect-seg" role="radiogroup" aria-label={t('top.aspect')}>
           {ASPECTS.map((a) => (
             <button key={a} role="radio" aria-checked={aspect === a} className={aspect === a ? 'on' : ''}
               onClick={() => s.apply((p) => (p.aspect === a ? p : { ...p, aspect: a }))}>

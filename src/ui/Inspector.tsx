@@ -217,10 +217,27 @@ export function Inspector() {
   const music = project.music.find((m) => m.id === selection);
   const overlay = project.overlays.find((o) => o.id === selection);
   if (!clip && !music && !overlay) {
-    if (project.music.length === 0) return null;
+    if (project.music.length > 0) {
+      return (
+        <aside className="inspector compact" aria-label={t('inspect.balance')}>
+          <BalanceSlider />
+        </aside>
+      );
+    }
+    // Wide screens only (CSS): explain the empty side column instead of leaving it blank.
     return (
-      <aside className="inspector compact" aria-label={t('inspect.balance')}>
-        <BalanceSlider />
+      <aside className="inspector empty" aria-label={t('inspect.nothing')}>
+        <h2 className="inspector-title muted-title">{t('inspect.nothing')}</h2>
+        <p>{t('inspect.nothingHint')}</p>
+        <h3 className="sheet-subtitle">{t('inspect.shortcuts')}</h3>
+        <ul className="shortcut-list">
+          <li><kbd>Space</kbd></li><li>{t('key.play')}</li>
+          <li><kbd>S</kbd></li><li>{t('key.split')}</li>
+          <li><kbd>Delete</kbd></li><li>{t('key.delete')}</li>
+          <li><kbd>Ctrl/⌘ Z</kbd></li><li>{t('key.undo')}</li>
+          <li><kbd>← →</kbd></li><li>{t('key.step')}</li>
+          <li><kbd>0</kbd></li><li>{t('key.fit')}</li>
+        </ul>
       </aside>
     );
   }

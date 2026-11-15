@@ -14,8 +14,10 @@ requests after the page loads.
 
 - Import videos (MP4/MOV, H.264, and HEVC where the device can decode it) and photos from the
   camera roll or file system. Files a device cannot decode get a clear message naming the codec.
-- Three tracks: video (with thumbnails), music, and overlays. Playhead scrubbing and pinch, wheel or
-  button zoom.
+- Three tracks: video (with thumbnails), music, and overlays. The timeline starts at the left edge
+  and is zoomed so the whole video fits the screen width on any device; the playhead moves across
+  it. Tap or drag to move the playhead, pinch / Ctrl+wheel / buttons to zoom (the view follows the
+  playhead), and **Fit** (or `0`) to see the whole video again.
 - Trim clip start and end, split at the playhead, delete, drag to reorder, and set clip volume or mute.
 - Music: import MP3, M4A or WAV, or pick one of the ten bundled CC0 tracks (pop, tropical, funk,
   rock, chiptune, synthwave, lo-fi, acoustic, piano, cinematic). Trim it, set its
@@ -33,7 +35,7 @@ requests after the page loads.
 - Undo/redo, and autosave to IndexedDB so a refresh or app switch does not lose work.
 - Installable PWA that works offline after the first visit.
 - Keyboard shortcuts on desktop: Space play/pause, S split, Delete remove, Ctrl/Cmd+Z undo,
-  Ctrl/Cmd+Shift+Z (or Ctrl+Y) redo, ←/→ step one frame (Shift: one second) with the timeline focused.
+  Ctrl/Cmd+Shift+Z (or Ctrl+Y) redo, ←/→ step one frame (Shift: one second), Home/End, +/− zoom and 0 fit, with the timeline focused.
 
 ## Supported browsers
 
@@ -108,7 +110,9 @@ committed).
   emulation. The tests import a sample clip, split it, add two emoji, a sticker and music with a
   fade-out, export, and check with Mediabunny that the file is an MP4 with H.264 + AAC of the right
   size and duration. Desktop runs also cover keyboard shortcuts, undo/redo, autosave across reload,
-  and the ffmpeg fallback. A content test (`tests/e2e/content.spec.ts`, needs `ffmpeg` on PATH)
+  and the ffmpeg fallback. A layout test checks phone, landscape, tablet and desktop sizes: the page
+  is never wider than the screen, the video is centred, and the timeline starts at the left and fits
+  the width. A content test (`tests/e2e/content.spec.ts`, needs `ffmpeg` on PATH)
   exports at 1080p and decodes the result: the emoji and sticker must appear in the frame only
   during their set times, and the music must be audible and fade out at the end.
 
