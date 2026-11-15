@@ -41,6 +41,11 @@ export function TopBar() {
           <Icon name="lock" size={14} />
           <span>{t('app.privacyShort')}</span>
         </span>
+        <button className="btn new-btn" onClick={() => void newProject()} disabled={empty}
+          aria-label={t('top.newProject')} title={t('top.newProject')} data-testid="new-video">
+          <Icon name="newDoc" size={20} />
+          <span>{t('top.newProject')}</span>
+        </button>
       </div>
       <div className="topbar-actions">
         <button className="icon-btn" onClick={() => s.undo()} disabled={!canUndo(history)} aria-label={t('top.undo')} title={`${t('top.undo')} (Ctrl+Z)`}>

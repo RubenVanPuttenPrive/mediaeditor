@@ -9,6 +9,7 @@ import { t } from '../i18n/strings';
 import { Icon } from './icons';
 import { importToTimeline } from './TopBar';
 import { pausePlayback } from './App';
+import { overlayName, removeOverlay } from './Inspector';
 
 /** Longest side of the preview canvas in pixels; enough for a sharp phone preview, cheap to draw. */
 const PREVIEW_MAX = 1280;
@@ -71,6 +72,8 @@ export function Preview() {
   };
 
   const onPointerDown = (e: React.PointerEvent) => {
+    // The delete button handles its own click; don't start a move under it.
+    if ((e.target as HTMLElement).closest('[data-handle="delete"]')) return;
     const pt = toFrame(e);
     const g = gesture.current;
     if (g) {
@@ -180,6 +183,12 @@ export function Preview() {
               transform: `translate(-50%, -50%) rotate(${selected.rotation}rad)`,
             }}>
               <span className="overlay-handle" data-handle="transform" aria-hidden="true" />
+              <button className="overlay-delete" data-handle="delete" data-testid="overlay-delete"
+                aria-label={t('inspect.removeNamed', { name: overlayName(selected) })} title={t('inspect.remove')}
+                style={{ transform: `rotate(${-selected.rotation}rad)` }}
+                onClick={() => removeOverlay(selected.id)}>
+                <Icon name="close" size={16} />
+              </button>
             </div>
           )}
         </div>

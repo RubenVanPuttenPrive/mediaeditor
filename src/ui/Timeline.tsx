@@ -256,7 +256,15 @@ export function Timeline() {
       s.apply((pr) => moveClip(pr, d.orig!.index, to));
     }
     if (!d.moved && e.type === 'pointerup') {
-      if (d.itemId) s.select(d.itemId);
+      if (d.itemId) {
+        s.select(d.itemId);
+        // Show a tapped overlay in the preview, so it can be moved or removed right there.
+        const o = getProject().overlays.find((x) => x.id === d.itemId);
+        if (o && (s.time < o.start || s.time >= o.start + o.duration)) {
+          pausePlayback();
+          s.seek(o.start + Math.min(0.5, o.duration / 2));
+        }
+      }
       else if (d.onRuler) {
         pausePlayback();
         s.seek(timeAtClientX(e.clientX));

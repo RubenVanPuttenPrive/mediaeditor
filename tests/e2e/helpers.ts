@@ -11,8 +11,7 @@ export async function freshStart(page: Page, query = '') {
   if (await page.locator('.clip').count()) {
     // Leftover project from an earlier test in this context: start over.
     page.once('dialog', (d) => d.accept());
-    await page.getByRole('button', { name: 'About' }).click();
-    await page.getByRole('button', { name: 'New project' }).click();
+    await page.getByTestId('new-video').click();
   }
   await expect(page.locator('.empty-state')).toBeVisible();
 }

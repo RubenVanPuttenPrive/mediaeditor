@@ -133,7 +133,7 @@ function MusicPanel({ onClose }: { onClose: () => void }) {
             </button>
             <div className="track-meta">
               <span className="track-title">{tr.title}</span>
-              <span className="track-sub">{formatTime(tr.duration, false)} · {t('music.license', { license: tr.license })}</span>
+              <span className="track-sub">{t(tr.style)} · {formatTime(tr.duration, false)} · {tr.license}</span>
             </div>
             <button className="btn" onClick={() => void addBuiltin(tr.id)}>{t('music.add')}</button>
           </li>

@@ -287,8 +287,204 @@ def acoustic_morning():
     finish(tr, 'acoustic-morning', total)
 
 
+def square(f, n, duty=0.5):
+    t = np.arange(n) / SR
+    return np.where((t * f) % 1.0 < duty, 1.0, -1.0)
+
+
+def marimba(f, n):
+    t = np.arange(n) / SR
+    return (np.sin(2 * np.pi * f * t) + 0.25 * np.sin(2 * np.pi * f * 4 * t) * np.exp(-t * 30)) * np.exp(-t * 6)
+
+
+def piano(f, n):
+    t = np.arange(n) / SR
+    tone = sum(np.sin(2 * np.pi * f * k * t) * (0.6 ** (k - 1)) for k in range(1, 6))
+    return tone * np.exp(-t * 2.2) * np.clip(t / 0.004, 0, 1) * 0.5
+
+
+def guitar(freqs, n):
+    x = sum(saw(f, n, d) for f in freqs for d in (-0.003, 0.003))
+    return np.tanh(lowpass(x, 2500) * 2.5) * 0.4
+
+
+def retro_arcade():
+    """Chiptune with square-wave lead and noise drums at 140 bpm."""
+    bpm, bars = 140, 36
+    beat = 60 / bpm
+    total = bars * 4 * beat + 3
+    tr = np.zeros((2, int(total * SR)))
+    prog = [('C', 'maj'), ('A', 'min'), ('F', 'maj'), ('G', 'maj')]
+    lead = [0, 2, 4, 7, 4, 2, 0, -1, 0, 4, 7, 9, 7, 4, 2, 4]
+    for bar in range(bars):
+        root, kind = prog[bar % 4]
+        t0 = bar * 4 * beat
+        notes = chord(root, kind, 4)
+        for e in range(8):
+            n = int(beat / 2 * SR * 0.8)
+            place(tr, square(hz(f'{root}2'), n) * env(n, 0.002, 0.05, 0.6, 0.02), t0 + e * beat / 2, 0.12)
+        for e in range(16):
+            n = int(beat / 4 * SR * 0.9)
+            place(tr, square(notes[e % 3] * 2, n, 0.25) * env(n, 0.001, 0.04, 0.3, 0.02), t0 + e * beat / 4, 0.04, -0.4)
+        for b in range(4):
+            place(tr, kick(), t0 + b * beat, 0.6)
+            if b % 2 == 1:
+                place(tr, hat(open_=True), t0 + b * beat, 0.5)
+        if bar >= 4 and bar % 8 < 6:
+            base = hz(f'{root}4')
+            for i in range(4):
+                step = lead[(bar * 4 + i) % len(lead)]
+                n = int(beat * SR * 0.9)
+                place(tr, square(base * 2 ** (step / 12), n, 0.5) * env(n, 0.003, 0.1, 0.5, 0.05), t0 + i * beat, 0.07, 0.3)
+    finish(tr, 'retro-arcade', total)
+
+
+def cinematic_rise():
+    """Slow, building cinematic pads and toms at 70 bpm."""
+    bpm, bars = 70, 18
+    beat = 60 / bpm
+    total = bars * 4 * beat + 4
+    tr = np.zeros((2, int(total * SR)))
+    prog = [('D', 'min'), ('A#', 'maj'), ('F', 'maj'), ('C', 'maj')]
+    for bar in range(bars):
+        root, kind = prog[bar % 4]
+        t0 = bar * 4 * beat
+        intensity = min(1.0, 0.3 + bar / bars)
+        place(tr, pad(chord(root, kind, 3), int(4.2 * beat * SR)), t0, 0.5 * intensity)
+        place(tr, sine(hz(f'{root}1'), int(4 * beat * SR)) * env(int(4 * beat * SR), 0.3, 0.5, 0.8, 0.8), t0, 0.45 * intensity)
+        if bar >= 6:
+            for b in range(4):
+                tom = kick(int(0.6 * SR))
+                place(tr, tom, t0 + b * beat, 0.7 * intensity, -0.2 if b % 2 else 0.2)
+        if bar >= 10:
+            for e in range(8):
+                n = int(beat / 2 * SR)
+                f = chord(root, kind, 5)[e % 3]
+                place(tr, pluck(f, n) * env(n, 0.002, 0.2, 0.4, 0.1), t0 + e * beat / 2, 0.12 * intensity, 0.4 if e % 2 else -0.4)
+    finish(tr, 'cinematic-rise', total)
+
+
+def funky_groove():
+    """Syncopated funk bass, clavinet stabs and tight drums at 104 bpm."""
+    bpm, bars = 104, 30
+    beat = 60 / bpm
+    total = bars * 4 * beat + 3
+    tr = np.zeros((2, int(total * SR)))
+    prog = [('E', 'min7'), ('E', 'min7'), ('A', 'min7'), ('B', 'min7')]
+    bass_pattern = [(0, 0), (0.75, 0), (1.5, 12), (2, 0), (2.5, 10), (3, 7), (3.5, 0)]
+    for bar in range(bars):
+        root, kind = prog[bar % 4]
+        t0 = bar * 4 * beat
+        for at, semi in bass_pattern:
+            n = int(0.22 * SR)
+            f = hz(f'{root}1') * 2 ** (semi / 12)
+            place(tr, lowpass(saw(f, n) + square(f, n) * 0.5, 800) * env(n, 0.003, 0.08, 0.4, 0.05), t0 + at * beat, 0.4)
+        for at in (0.5, 1.25, 2.5, 3.25):
+            n = int(0.12 * SR)
+            stab = sum(square(f, n, 0.3) for f in chord(root, kind, 4)) / 4
+            place(tr, lowpass(stab, 3000) * env(n, 0.001, 0.05, 0.3, 0.03), t0 + at * beat, 0.18, 0.3)
+        if bar >= 2:
+            place(tr, kick(), t0, 0.85)
+            place(tr, kick(), t0 + 2.5 * beat, 0.7)
+            place(tr, snare(), t0 + beat, 0.5)
+            place(tr, snare(), t0 + 3 * beat, 0.5)
+            for e in range(16):
+                place(tr, hat(), t0 + e * beat / 4, 0.18 if e % 2 else 0.28, -0.35)
+    finish(tr, 'funky-groove', total)
+
+
+def piano_reflections():
+    """Gentle solo piano in A minor at 72 bpm."""
+    bpm, bars = 72, 20
+    beat = 60 / bpm
+    total = bars * 4 * beat + 4
+    tr = np.zeros((2, int(total * SR)))
+    prog = [('A', 'min'), ('F', 'maj'), ('C', 'maj'), ('G', 'maj')]
+    for bar in range(bars):
+        root, kind = prog[bar % 4]
+        t0 = bar * 4 * beat
+        low = chord(root, kind, 3)
+        arp = [low[0], low[1], low[2], low[1] * 2, low[2], low[1]]
+        place(tr, piano(hz(f'{root}2'), int(4 * beat * SR)), t0, 0.35, -0.2)
+        for i, f in enumerate(arp + arp[:2]):
+            place(tr, piano(f, int(2 * beat * SR)), t0 + i * beat / 2, 0.22, -0.1)
+        if bar >= 4 and bar < 18:
+            top = chord(root, kind, 5)
+            for i, f in enumerate([top[2], top[1], top[0] if bar % 2 else top[1]]):
+                place(tr, piano(f, int(2 * beat * SR)), t0 + i * 1.33 * beat, 0.2, 0.2)
+    finish(tr, 'piano-reflections', total)
+
+
+def tropical_sunset():
+    """Marimba and shaker, laid-back tropical house at 108 bpm."""
+    bpm, bars = 108, 30
+    beat = 60 / bpm
+    total = bars * 4 * beat + 3
+    tr = np.zeros((2, int(total * SR)))
+    prog = [('F', 'maj7'), ('G', 'maj'), ('E', 'min7'), ('A', 'min')]
+    rhythm = [0, 0.75, 1.5, 2, 2.75, 3.5]
+    for bar in range(bars):
+        root, kind = prog[bar % 4]
+        t0 = bar * 4 * beat
+        notes = chord(root, kind, 4)
+        for i, at in enumerate(rhythm):
+            place(tr, marimba(notes[i % len(notes)] * (2 if i % 3 == 2 else 1), int(0.6 * SR)), t0 + at * beat, 0.28, 0.25 if i % 2 else -0.25)
+        place(tr, pad(chord(root, kind, 3), int(4 * beat * SR)), t0, 0.18)
+        if bar >= 2:
+            for b in range(4):
+                place(tr, kick(), t0 + b * beat, 0.7)
+                place(tr, hat() * 1.2, t0 + (b + 0.5) * beat, 0.3, 0.4)
+            place(tr, snare() * 0.6, t0 + beat, 0.25)
+            place(tr, snare() * 0.6, t0 + 3 * beat, 0.25)
+        n = int(beat * SR * 0.9)
+        for b in (0, 2.5):
+            place(tr, sine(hz(f'{root}2'), n) * env(n, 0.01, 0.2, 0.6, 0.1), t0 + b * beat, 0.45)
+    finish(tr, 'tropical-sunset', total)
+
+
+def rock_drive():
+    """Driving power chords and big drums at 128 bpm."""
+    bpm, bars = 128, 34
+    beat = 60 / bpm
+    total = bars * 4 * beat + 3
+    tr = np.zeros((2, int(total * SR)))
+    roots = ['E', 'C', 'G', 'D']
+    for bar in range(bars):
+        root = roots[(bar // 2) % 4]
+        t0 = bar * 4 * beat
+        f0 = hz(f'{root}2')
+        power = [f0, f0 * 1.5, f0 * 2]
+        for e in range(8):
+            n = int(beat / 2 * SR * 0.95)
+            place(tr, guitar(power, n) * env(n, 0.003, 0.05, 0.8, 0.03), t0 + e * beat / 2, 0.35, -0.5)
+            place(tr, guitar([f * 1.002 for f in power], n) * env(n, 0.003, 0.05, 0.8, 0.03), t0 + e * beat / 2, 0.35, 0.5)
+            place(tr, lowpass(saw(f0 / 2, n), 400) * env(n, 0.003, 0.05, 0.7, 0.03), t0 + e * beat / 2, 0.3)
+        if bar >= 1:
+            for b in range(4):
+                place(tr, kick(), t0 + b * beat, 0.9)
+                if b % 2:
+                    place(tr, snare(), t0 + b * beat, 0.7)
+                for e in range(2):
+                    place(tr, hat(open_=e == 1), t0 + (b + e / 2) * beat, 0.2, 0.3)
+    finish(tr, 'rock-drive', total)
+
+
+ALL = ['sunny_loop', 'night_drive', 'lofi_steps', 'acoustic_morning', 'retro_arcade', 'cinematic_rise',
+       'funky_groove', 'piano_reflections', 'tropical_sunset', 'rock_drive']
+
+if __name__ == '__main__' and len(__import__('sys').argv) > 1:
+    for name in __import__('sys').argv[1:]:
+        globals()[name]()
+    raise SystemExit
+
 if __name__ == '__main__':
     sunny_loop()
     night_drive()
     lofi_steps()
     acoustic_morning()
+    retro_arcade()
+    cinematic_rise()
+    funky_groove()
+    piano_reflections()
+    tropical_sunset()
+    rock_drive()

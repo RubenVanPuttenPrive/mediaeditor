@@ -17,10 +17,15 @@ requests after the page loads.
 - Three tracks: video (with thumbnails), music, and overlays. Playhead scrubbing and pinch, wheel or
   button zoom.
 - Trim clip start and end, split at the playhead, delete, drag to reorder, and set clip volume or mute.
-- Music: import MP3, M4A or WAV, or pick one of the four bundled CC0 tracks. Trim it, set its
+- Music: import MP3, M4A or WAV, or pick one of the ten bundled CC0 tracks (pop, tropical, funk,
+  rock, chiptune, synthwave, lo-fi, acoustic, piano, cinematic). Trim it, set its
   start, volume, fade-in and fade-out, and balance original audio against music.
 - Emoji (Twemoji, searchable, by category), a sticker pack and text overlays. Each can be moved,
   scaled and rotated (drag, pinch/rotate, or the corner handle), with a start time and duration.
+  Remove one with the red × on it in the preview or the Remove button in the side panel, or clear
+  them all at once.
+- **New video** in the top bar starts over (after a confirmation); the old edit and its imported
+  files are removed from the device.
 - Aspect ratios 16:9, 9:16 and 1:1, with fit or fill per clip.
 - MP4 export (H.264 + AAC) at 720p or 1080p, with progress, estimated time and cancel. The screen
   stays awake during export. Afterwards you can **Share / Save to Photos** (Web Share API) or
@@ -129,7 +134,7 @@ Gallery) and Windows (Chrome or Edge → Download → play in the Films & TV / M
   About screen.
 - **Emoji names and keywords:** [Emojibase](https://emojibase.dev), MIT.
 - **Stickers** (`public/stickers/`): made for this project, [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/).
-- **Music** (`public/music/`): four tracks synthesised from code by `scripts/make-music.py` for
+- **Music** (`public/music/`): ten tracks synthesised from code by `scripts/make-music.py` for
   this project, no samples, [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/).
   No copyrighted music is bundled.
 - **Fonts:** Bricolage Grotesque, Inter, Bebas Neue and Pacifico (SIL OFL 1.1); Permanent Marker

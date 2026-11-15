@@ -1,9 +1,11 @@
 import { useId } from 'react';
 import { useEditor, useProject } from '../state/store';
-import { updateClip, updateMusic, updateOverlay } from '../model/timeline';
+import { removeItem, updateClip, updateMusic, updateOverlay } from '../model/timeline';
+import { getProject } from '../state/store';
 import { clamp, MIN_CLIP } from '../model/time';
 import type { MusicClip, Overlay, TextOverlay, VideoClip } from '../model/types';
 import { FONTS } from '../render/assets';
+import { STICKERS } from '../render/stickers';
 import { t } from '../i18n/strings';
 import { Icon } from './icons';
 
@@ -162,7 +164,7 @@ function OverlayInspector({ o }: { o: Overlay }) {
   const deg = Math.round(((((o.rotation * 180) / Math.PI) % 360) + 540) % 360 - 180);
   return (
     <>
-      <h2 className="inspector-title overlay">{o.kind === 'text' ? t('inspect.text') : o.kind === 'emoji' ? o.label : t('inspect.overlay')}</h2>
+      <h2 className="inspector-title overlay">{overlayName(o)}</h2>
       <div className="inspector-grid">
         {o.kind === 'text' && (
           <div className="field wide">
@@ -183,6 +185,31 @@ function OverlayInspector({ o }: { o: Overlay }) {
   );
 }
 
+export const overlayName = (o: Overlay) =>
+  o.kind === 'text' ? o.text.split('\n')[0] || t('inspect.text') : o.kind === 'emoji' ? o.label : (STICKERS.find((x) => x.id === o.sticker)?.name ?? o.sticker);
+
+export function removeOverlay(id: string) {
+  const s = useEditor.getState();
+  s.apply((p) => removeItem(p, id));
+  if (s.selection === id) s.select(null);
+}
+
+function removeSelected() {
+  const s = useEditor.getState();
+  const id = s.selection;
+  if (!id) return;
+  s.apply((p) => removeItem(p, id));
+  s.select(null);
+}
+
+function removeAllOverlays() {
+  const count = getProject().overlays.length;
+  if (!window.confirm(t('inspect.removeAllConfirm', { count }))) return;
+  const s = useEditor.getState();
+  s.apply((p) => ({ ...p, overlays: [] }));
+  s.select(null);
+}
+
 export function Inspector() {
   const project = useProject();
   const selection = useEditor((s) => s.selection);
@@ -199,12 +226,21 @@ export function Inspector() {
   }
   return (
     <aside className="inspector" aria-label={t('inspect.clip')}>
-      <button className="icon-btn small inspector-close" onClick={() => useEditor.getState().select(null)} aria-label={t('inspect.close')}>
-        <Icon name="close" size={18} />
-      </button>
+      <div className="inspector-actions">
+        <button className="btn danger small-btn" onClick={removeSelected} data-testid="inspector-remove">
+          <Icon name="trash" size={18} />
+          <span>{t('inspect.remove')}</span>
+        </button>
+        <button className="icon-btn small" onClick={() => useEditor.getState().select(null)} aria-label={t('inspect.close')}>
+          <Icon name="close" size={18} />
+        </button>
+      </div>
       {clip && <ClipInspector clip={clip} />}
       {music && <MusicInspector clip={music} />}
       {overlay && <OverlayInspector o={overlay} />}
+      {overlay && project.overlays.length > 1 && (
+        <button className="btn link-danger" onClick={removeAllOverlays}>{t('inspect.removeAllOverlays')}</button>
+      )}
     </aside>
   );
 }
