@@ -1,0 +1,8 @@
+node_modules
+dist
+public/emoji
+public/ffmpeg
+test-results
+playwright-report
+*.tsbuildinfo
+.vite
