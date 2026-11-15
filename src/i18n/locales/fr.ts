@@ -208,7 +208,8 @@ const fr: Table = {
   'export.shareFailed': 'Le partage ne fonctionne pas ici ; utilisez Télécharger.',
 
   'about.title': 'À propos de MediaEditor',
-  'about.body': 'MediaEditor est un éditeur vidéo qui fonctionne entièrement dans votre navigateur. Les vidéos, photos et musiques importées restent sur cet appareil : pas de serveur, pas de compte, pas de pistage et pas de cookies.',
+  'about.body': 'MediaEditor est un éditeur vidéo qui fonctionne entièrement dans votre navigateur. Les vidéos, photos et musiques importées restent sur cet appareil : pas de serveur, pas de compte et pas de cookies.',
+  'about.analytics': 'Pour savoir à quel point l’app est utilisée, les visites sont comptées de façon anonyme avec Cloudflare Web Analytics (pays, navigateur et type d’appareil ; sans cookies ni données personnelles). Vos vidéos et vos montages n’en font jamais partie.',
   'about.storage': 'Votre projet est enregistré automatiquement dans ce navigateur : rien n’est perdu si vous rechargez la page.',
   'about.licenses': 'Licences et crédits',
   'about.emoji': 'Images des emoji : Twemoji par Twitter, Inc. et d’autres contributeurs, sous licence CC-BY 4.0.',

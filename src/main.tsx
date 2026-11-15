@@ -11,6 +11,7 @@ import './ui/styles.css';
 import { App } from './ui/App';
 import { registerServiceWorker } from './lib/pwa';
 import { initLocale } from './i18n/strings';
+import { startAnalytics } from './lib/analytics';
 
 // Load the device's language (or the one picked in About) before the first paint.
 await initLocale();
@@ -21,3 +22,5 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 );
 registerServiceWorker();
+// Anonymous visit counts for the site owner (no cookies; videos never leave the device).
+startAnalytics();

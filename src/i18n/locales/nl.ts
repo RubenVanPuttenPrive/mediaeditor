@@ -208,7 +208,8 @@ const nl: Table = {
   'export.shareFailed': 'Delen werkt hier niet; gebruik Downloaden.',
 
   'about.title': 'Over MediaEditor',
-  'about.body': 'MediaEditor is een video-editor die volledig in je browser draait. Video’s, foto’s en muziek die je importeert blijven op dit apparaat: geen server, geen account, geen tracking en geen cookies.',
+  'about.body': 'MediaEditor is een video-editor die volledig in je browser draait. Video’s, foto’s en muziek die je importeert blijven op dit apparaat: geen server, geen account en geen cookies.',
+  'about.analytics': 'Om te zien hoe vaak de app wordt gebruikt, worden bezoeken anoniem geteld met Cloudflare Web Analytics (land, browser en type apparaat; geen cookies, geen persoonsgegevens). Je video’s en bewerkingen horen daar nooit bij.',
   'about.storage': 'Je project wordt automatisch in deze browser bewaard, zodat je bij herladen niets kwijtraakt.',
   'about.licenses': 'Licenties en vermeldingen',
   'about.emoji': 'Emoji-afbeeldingen: Twemoji van Twitter, Inc. en andere bijdragers, onder licentie CC-BY 4.0.',

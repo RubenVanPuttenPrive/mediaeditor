@@ -27,6 +27,7 @@ export default function AboutDialog({ onClose }: { onClose: () => void }) {
       <LanguagePicker />
       <p>{t('about.body')}</p>
       <p>{t('about.storage')}</p>
+      <p>{t('about.analytics')}</p>
       <button className="btn" onClick={async () => { if (await newProject()) onClose(); }}>
         <Icon name="newDoc" />
         {t('top.newProject')}

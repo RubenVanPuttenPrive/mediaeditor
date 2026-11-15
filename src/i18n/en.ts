@@ -207,7 +207,8 @@ export const en = {
   'export.shareFailed': 'Sharing did not work here; use Download instead.',
 
   'about.title': 'About MediaEditor',
-  'about.body': 'MediaEditor is a video editor that runs entirely in your browser. Videos, photos and music you import stay on this device: there is no server, no account, no tracking and no cookies.',
+  'about.body': 'MediaEditor is a video editor that runs entirely in your browser. Videos, photos and music you import stay on this device: there is no server, no account and no cookies.',
+  'about.analytics': 'To see how often the app is used, visits are counted anonymously with Cloudflare Web Analytics (country, browser and device type; no cookies, no personal data). Your videos and edits are never part of this.',
   'about.storage': 'Your project is saved automatically in this browser so a refresh does not lose work.',
   'about.licenses': 'Licenses and credits',
   'about.emoji': 'Emoji graphics: Twemoji by Twitter, Inc. and other contributors, licensed under CC-BY 4.0.',

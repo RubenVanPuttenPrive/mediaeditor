@@ -7,8 +7,8 @@ gallery or share.
 **Live app:** https://rubenvanputtenprive.github.io/mediaeditor/
 
 **Private by design.** There is no server. Decoding, editing, rendering and encoding all happen on
-your device; your videos are never uploaded. No accounts, no tracking, no cookies, no external
-requests after the page loads.
+your device; your videos are never uploaded. No accounts and no cookies. The only outside request is
+the Cloudflare Web Analytics beacon described below.
 
 ## Features
 
@@ -173,4 +173,23 @@ are described in `docs/plan.md`. The data model already reserves `speed` on clip
 2. Copy `src/i18n/locales/nl.ts` to `src/i18n/locales/xx.ts` and translate every value. Keep the
    `{placeholders}`. TypeScript and `src/i18n/strings.test.ts` fail if a key or placeholder is missing.
 3. Emoji names come from `emojibase-data/xx` when it exists. Otherwise the emoji index falls back to English.
+
+## Usage statistics (owner only)
+
+Visits are counted with [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/):
+cookieless, no personal data. It reports page views, visits, country, browser, OS, device type and
+page-load speed. It cannot see videos, photos, music or edits; those never leave the device. The
+About screen says so in every language. Analytics is always on in the deployed site, never on
+localhost (so local runs and tests send nothing).
+
+Setup (once):
+1. In the Cloudflare dashboard: **Analytics & Logs → Web Analytics → Add a site**, hostname
+   `rubenvanputtenprive.github.io`, and choose the JavaScript snippet option. Copy the `token`
+   value from the snippet (`data-cf-beacon='{"token": "…"}'`).
+2. Store it as a repository variable (it is not a secret, as it ends up in the page):
+   `gh variable set CF_BEACON_TOKEN --repo RubenVanPuttenPrive/mediaeditor --body <token>`
+3. Re-run the deploy (push, or `gh workflow run deploy.yml`). The build passes it on as
+   `VITE_CF_BEACON_TOKEN`; without it the beacon is simply left out.
+
+Cloudflare cannot count in-app actions (exports, stickers used); it shows visits and audience.
 
