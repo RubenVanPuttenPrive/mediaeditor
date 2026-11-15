@@ -1,6 +1,6 @@
 // Emoji picker. The index and the Twemoji images are loaded only when the picker is first opened.
 import { useEffect, useMemo, useState } from 'react';
-import { t } from '../i18n/strings';
+import { getLocale, t } from '../i18n/strings';
 import { Dialog } from './Dialog';
 import { emojiUrl, ASSET_BASE } from '../render/assets';
 import { addOverlayAtPlayhead } from './Panels';
@@ -8,8 +8,17 @@ import { addOverlayAtPlayhead } from './Panels';
 type Entry = [file: string, unicode: string, label: string, group: number, tags: string];
 interface Index { groups: { id: number; key: string; label: string }[]; emoji: Entry[] }
 
-let indexPromise: Promise<Index> | null = null;
-const loadIndex = () => (indexPromise ??= fetch(`${ASSET_BASE}emoji/index.json`).then((r) => r.json()));
+// One index per language: names and keywords in that language, plus the English keywords.
+const indexes = new Map<string, Promise<Index>>();
+function loadIndex(locale: string): Promise<Index> {
+  let p = indexes.get(locale);
+  if (!p) {
+    p = fetch(`${ASSET_BASE}emoji/index-${locale}.json`)
+      .then((r) => (r.ok ? r.json() : fetch(`${ASSET_BASE}emoji/index-en.json`).then((x) => x.json())));
+    indexes.set(locale, p);
+  }
+  return p;
+}
 
 const RECENT_KEY = 'mediaeditor.recentEmoji';
 function readRecent(): string[] {
@@ -37,7 +46,7 @@ export default function EmojiPicker({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState('');
   const [group, setGroup] = useState<number | 'recent'>(() => (readRecent().length ? 'recent' : 0));
   useEffect(() => {
-    void loadIndex().then(setIndex);
+    void loadIndex(getLocale()).then(setIndex);
   }, []);
 
   const list = useMemo(() => {
@@ -45,7 +54,7 @@ export default function EmojiPicker({ onClose }: { onClose: () => void }) {
     const q = query.trim().toLowerCase();
     if (q) {
       const words = q.split(/\s+/);
-      return index.emoji.filter((e) => words.every((w) => e[2].toLowerCase().includes(w) || e[4].includes(w))).slice(0, 240);
+      return index.emoji.filter((e) => words.every((w) => e[2].toLowerCase().includes(w) || e[4].toLowerCase().includes(w))).slice(0, 240);
     }
     if (group === 'recent') {
       const byFile = new Map(index.emoji.map((e) => [e[0], e]));

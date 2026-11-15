@@ -1,190 +1,90 @@
-// Every user-facing string lives here. To add Dutch, add an `nl` table with the same keys and
-// pick it from navigator.language in `currentLocale`.
-
-const en = {
-  'app.name': 'MediaEditor',
-  'app.privacy': 'Private by design: your videos are edited on this device and never uploaded.',
-  'app.privacyShort': 'Stays on your device',
-  'app.restoring': 'Restoring your project…',
-  'app.offlineReady': 'MediaEditor now works offline.',
-  'app.updateReady': 'A new version is ready. Reload to update.',
-  'app.reload': 'Reload',
-
-  'top.import': 'Import',
-  'top.export': 'Export',
-  'top.about': 'About',
-  'top.undo': 'Undo',
-  'top.redo': 'Redo',
-  'top.newProject': 'New video',
-  'top.newProjectConfirm': 'Start a new video? Your current edit and its imported files will be removed from this device. Export it first if you want to keep it.',
-  'top.aspect': 'Aspect ratio',
-
-  'empty.title': 'Start with a video',
-  'empty.body': 'Import videos or photos from your device. Nothing is uploaded.',
-  'empty.button': 'Import videos or photos',
-
-  'import.picking': 'Importing {name}…',
-  'import.unknownType': '"{name}" is not a video, photo or audio file.',
-  'import.noVideoTrack': '"{name}" has no video in it.',
-  'import.unsupportedCodec': '"{name}" uses {codec}, which this device cannot play. Try converting it to H.264 MP4.',
-  'import.unsupportedImage': 'This browser cannot open the photo "{name}".',
-  'import.unknownCodec': 'an unknown format',
-  'import.bigWarning': '"{name}" is {size}{length}. Large clips can make the browser on phones and tablets run out of memory and reload. Import anyway?',
-  'import.bigLength': ', {minutes} minutes long',
-  'import.failed': 'Could not import "{name}": {reason}',
-  'import.storageFull': 'Not enough storage on this device to keep "{name}" for autosave. It will work until you close the page.',
-
-  'play.play': 'Play',
-  'play.pause': 'Pause',
-  'play.toStart': 'Go to start',
-  'play.time': 'Playhead at {time} of {total}',
-
-  'tool.split': 'Split',
-  'tool.delete': 'Delete',
-  'tool.music': 'Music',
-  'tool.emoji': 'Emoji',
-  'tool.stickers': 'Stickers',
-  'tool.text': 'Text',
-  'tool.addMedia': 'Add clip',
-  'tool.zoomIn': 'Zoom in',
-  'tool.zoomOut': 'Zoom out',
-  'tool.zoomFit': 'Fit',
-
-  'track.video': 'Video',
-  'track.music': 'Music',
-  'track.overlay': 'Overlays',
-  'track.timeline': 'Timeline. Tap or drag to move the playhead, pinch to zoom.',
-  'track.trimStart': 'Trim start of {name}',
-  'track.trimEnd': 'Trim end of {name}',
-  'track.clip': '{name}, {duration}',
-  'track.emptyMusic': 'Tap Music to add a soundtrack',
-  'track.emptyOverlay': 'Emoji, stickers and text appear here',
-
-  'inspect.clip': 'Clip',
-  'inspect.volume': 'Volume',
-  'inspect.mute': 'Mute original sound',
-  'inspect.fit': 'Frame',
-  'inspect.fitContain': 'Fit',
-  'inspect.fitCover': 'Fill',
-  'inspect.duration': 'Duration',
-  'inspect.start': 'Start',
-  'inspect.trimIn': 'In point',
-  'inspect.trimOut': 'Out point',
-  'inspect.music': 'Music',
-  'inspect.fadeIn': 'Fade in',
-  'inspect.fadeOut': 'Fade out',
-  'inspect.balance': 'Original audio vs music',
-  'inspect.balanceOriginal': 'Original',
-  'inspect.balanceMusic': 'Music',
-  'inspect.overlay': 'Overlay',
-  'inspect.size': 'Size',
-  'inspect.rotation': 'Rotation',
-  'inspect.text': 'Text',
-  'inspect.font': 'Font',
-  'inspect.color': 'Colour',
-  'inspect.outline': 'Outline',
-  'inspect.shadow': 'Shadow',
-  'inspect.close': 'Close',
-  'inspect.nothing': 'Nothing selected',
-  'inspect.nothingHint': 'Tap a clip, music or overlay on the timeline to edit it here.',
-  'inspect.shortcuts': 'Keyboard shortcuts',
-  'key.play': 'Play / pause',
-  'key.split': 'Split at the playhead',
-  'key.delete': 'Remove the selected item',
-  'key.undo': 'Undo (add Shift to redo)',
-  'key.step': 'Step one frame (Shift: one second)',
-  'key.fit': 'Fit the whole video in the timeline',
-  'inspect.remove': 'Remove',
-  'inspect.removeNamed': 'Remove {name}',
-  'inspect.removeAllOverlays': 'Remove all emoji, stickers and text',
-  'inspect.removeAllConfirm': 'Remove all {count} emoji, stickers and text overlays?',
-  'inspect.seconds': '{value} s',
-  'inspect.center': 'Centre',
-
-  'music.title': 'Add music',
-  'music.import': 'Import audio file (MP3, M4A, WAV)',
-  'music.library': 'Free music included with the app',
-  'music.preview': 'Preview {name}',
-  'music.stopPreview': 'Stop preview',
-  'music.add': 'Add',
-  'music.license': 'License: {license}',
-  'music.style.pop': 'Bright, bouncy pop',
-  'music.style.tropical': 'Laid-back tropical house',
-  'music.style.funk': 'Funky bass groove',
-  'music.style.rock': 'Driving rock',
-  'music.style.chiptune': 'Retro video-game chiptune',
-  'music.style.synthwave': 'Moody synthwave',
-  'music.style.lofi': 'Relaxed lo-fi beat',
-  'music.style.acoustic': 'Fingerpicked acoustic',
-  'music.style.piano': 'Gentle solo piano',
-  'music.style.cinematic': 'Slow, building cinematic',
-
-  'emoji.title': 'Emoji',
-  'emoji.search': 'Search emoji',
-  'emoji.loading': 'Loading emoji…',
-  'emoji.none': 'No emoji match "{q}".',
-  'emoji.recent': 'Recent',
-  'stickers.title': 'Stickers',
-  'text.title': 'Add text',
-  'text.placeholder': 'Your text',
-  'text.add': 'Add text',
-  'dialog.close': 'Close',
-
-  'export.title': 'Export video',
-  'export.quality': 'Quality',
-  'export.start': 'Export MP4',
-  'export.cancel': 'Cancel',
-  'export.preparing': 'Preparing…',
-  'export.loadingEncoder': 'Loading encoder…',
-  'export.rendering': 'Rendering {percent}%',
-  'export.eta': 'About {time} left',
-  'export.finishing': 'Finishing…',
-  'export.done': 'Your video is ready',
-  'export.share': 'Share / Save to Photos',
-  'export.download': 'Download',
-  'export.again': 'Done',
-  'export.failed': 'Export failed: {reason}',
-  'export.cancelled': 'Export cancelled.',
-  'export.empty': 'Add a clip, emoji or text first.',
-  'export.method': 'Encoder: {method}',
-  'export.methodWebCodecs': 'hardware (WebCodecs)',
-  'export.methodWasmAac': 'hardware video, software audio',
-  'export.methodFfmpeg': 'software (ffmpeg, slower)',
-  'export.keepOpen': 'Keep this page open until the export finishes.',
-  'export.downscaled': '1080p is not supported here, exporting at 720p.',
-  'export.size': '{size}, {duration}',
-  'export.shareFailed': 'Sharing did not work here; use Download instead.',
-
-  'about.title': 'About MediaEditor',
-  'about.body': 'MediaEditor is a video editor that runs entirely in your browser. Videos, photos and music you import stay on this device: there is no server, no account, no tracking and no cookies.',
-  'about.storage': 'Your project is saved automatically in this browser so a refresh does not lose work.',
-  'about.licenses': 'Licenses and credits',
-  'about.emoji': 'Emoji graphics: Twemoji by Twitter, Inc. and other contributors, licensed under CC-BY 4.0.',
-  'about.emojiData': 'Emoji names and keywords: Emojibase, MIT License.',
-  'about.stickers': 'Stickers: made for MediaEditor, released into the public domain (CC0 1.0).',
-  'about.fonts': 'Fonts: Bricolage Grotesque, Inter, Bebas Neue and Pacifico (SIL Open Font License 1.1); Permanent Marker and Roboto Slab (Apache License 2.0).',
-  'about.code': 'Built with Mediabunny (MPL-2.0), ffmpeg.wasm (MIT, core LGPL/GPL), React (MIT) and Zustand (MIT).',
-  'about.music': 'Included music',
-  'about.trackCredit': '{title}: composed and synthesised for MediaEditor, released into the public domain.',
-  'about.version': 'Version {version}',
-
-  'error.generic': 'Something went wrong: {reason}',
-  'unit.mb': '{n} MB',
-  'unit.gb': '{n} GB',
-} as const;
+// UI text. English (./en.ts) is bundled; other languages live in ./locales/<code>.ts and are loaded
+// on demand. The language follows the device/browser settings unless the user picks one in About.
+import { useSyncExternalStore } from 'react';
+import { en } from './en';
+import LOCALE_LIST from './locales.json';
 
 export type StringKey = keyof typeof en;
-type Table = Record<StringKey, string>;
+export type Table = Record<StringKey, string>;
+export interface LocaleInfo { code: string; name: string }
 
-const tables: Record<string, Table> = { en };
-const currentLocale = 'en';
+export const LOCALES: LocaleInfo[] = LOCALE_LIST;
+const PREF_KEY = 'mediaeditor.lang';
+const loaders = import.meta.glob<{ default: Table }>('./locales/*.ts');
+
+let current = 'en';
+let table: Table = en;
+const listeners = new Set<() => void>();
+
+/** Best supported language for a list of BCP 47 tags (e.g. navigator.languages), else English. */
+export function matchLocale(tags: readonly string[]): string {
+  for (const tag of tags) {
+    const base = tag.toLowerCase().split(/[-_]/)[0];
+    if (LOCALES.some((l) => l.code === base)) return base;
+  }
+  return 'en';
+}
+
+export function deviceLocale(): string {
+  if (typeof navigator === 'undefined') return 'en';
+  return matchLocale(navigator.languages?.length ? navigator.languages : [navigator.language ?? 'en']);
+}
+
+/** The saved choice: a locale code, or 'auto' to follow the device. */
+export function localePreference(): string {
+  try {
+    return localStorage.getItem(PREF_KEY) ?? 'auto';
+  } catch {
+    return 'auto';
+  }
+}
+
+async function load(code: string): Promise<Table> {
+  if (code === 'en') return en;
+  const loader = loaders[`./locales/${code}.ts`];
+  if (!loader) return en;
+  try {
+    return (await loader()).default;
+  } catch {
+    return en;
+  }
+}
+
+/** Switches language ('auto' = device language) and remembers the choice. */
+export async function setLocale(pref: string) {
+  try {
+    if (pref === 'auto') localStorage.removeItem(PREF_KEY);
+    else localStorage.setItem(PREF_KEY, pref);
+  } catch {
+    /* storage unavailable: still switch for this session */
+  }
+  const code = pref === 'auto' ? deviceLocale() : matchLocale([pref]);
+  table = await load(code);
+  current = code;
+  if (typeof document !== 'undefined') document.documentElement.lang = code;
+  listeners.forEach((l) => l());
+}
+
+/** Call once before the first render. */
+export const initLocale = () => setLocale(localePreference());
+
+export const getLocale = () => current;
+
+/** Re-renders the calling component when the language changes. */
+export function useLocale(): string {
+  return useSyncExternalStore((cb) => {
+    listeners.add(cb);
+    return () => listeners.delete(cb);
+  }, getLocale, getLocale);
+}
 
 export function t(key: StringKey, params?: Record<string, string | number>): string {
-  let s: string = tables[currentLocale]?.[key] ?? en[key] ?? key;
+  let s: string = table[key] ?? en[key] ?? key;
   if (params) for (const [k, v] of Object.entries(params)) s = s.replaceAll(`{${k}}`, String(v));
   return s;
 }
 
 export function formatBytes(n: number) {
-  return n >= 1024 ** 3 ? t('unit.gb', { n: (n / 1024 ** 3).toFixed(1) }) : t('unit.mb', { n: Math.max(0.1, n / 1024 ** 2).toFixed(1) });
+  const num = (v: number) => v.toLocaleString(current, { maximumFractionDigits: 1, minimumFractionDigits: 1 });
+  return n >= 1024 ** 3 ? t('unit.gb', { n: num(n / 1024 ** 3) }) : t('unit.mb', { n: num(Math.max(0.1, n / 1024 ** 2)) });
 }

@@ -34,6 +34,10 @@ requests after the page loads.
   **Download**.
 - Undo/redo, and autosave to IndexedDB so a refresh or app switch does not lose work.
 - Installable PWA that works offline after the first visit.
+- **Eight languages**: English, Nederlands, Deutsch, Français, Español, Português, Italiano and
+  Polski. The app follows the device/browser language (`navigator.languages`) and falls back to
+  English; About → Language overrides it and the choice is remembered. Emoji search uses names and
+  keywords in the chosen language (English keywords keep working too).
 - Keyboard shortcuts on desktop: Space play/pause, S split, Delete remove, Ctrl/Cmd+Z undo,
   Ctrl/Cmd+Shift+Z (or Ctrl+Y) redo, ←/→ step one frame (Shift: one second), Home/End, +/− zoom and 0 fit, with the timeline focused.
 
@@ -156,8 +160,16 @@ src/preview    playback engine (video elements → canvas, Web Audio)
 src/render     shared frame/overlay drawing, emoji/sticker assets, bundled music list
 src/export     exporter (WebCodecs/Mediabunny), ffmpeg fallback, audio mixer
 src/ui         React components and styles
-src/i18n       all UI strings (add `nl` here for Dutch)
+src/i18n       UI strings: en.ts (source), locales/<code>.ts, locales.json (list), strings.ts (t(), detection)
 ```
 
 Planned later features (transitions, filters, speed, voice-over, animated stickers, project files)
 are described in `docs/plan.md`. The data model already reserves `speed` on clips.
+
+## Adding a language
+
+1. Add `{ "code": "xx", "name": "Native name" }` to `src/i18n/locales.json`.
+2. Copy `src/i18n/locales/nl.ts` to `src/i18n/locales/xx.ts` and translate every value. Keep the
+   `{placeholders}`. TypeScript and `src/i18n/strings.test.ts` fail if a key or placeholder is missing.
+3. Emoji names come from `emojibase-data/xx` when it exists. Otherwise the emoji index falls back to English.
+

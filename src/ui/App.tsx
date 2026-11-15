@@ -3,7 +3,7 @@ import { useEditor, getProject } from '../state/store';
 import { loadState, saveState, requestPersistence, listBlobIds, deleteBlob } from '../media/db';
 import { engine } from '../preview/engine';
 import { referencedMedia, removeItem, splitClipAt, splitMusicAt } from '../model/timeline';
-import { t } from '../i18n/strings';
+import { t, useLocale } from '../i18n/strings';
 import { TopBar } from './TopBar';
 import { Preview } from './Preview';
 import { Transport } from './Transport';
@@ -152,6 +152,7 @@ function useShortcuts() {
 }
 
 export function App() {
+  useLocale(); // re-render everything when the language changes
   useRestoreAndAutosave();
   useEngineSync();
   useShortcuts();

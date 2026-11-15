@@ -51,7 +51,7 @@ function StickerPanel({ onClose }: { onClose: () => void }) {
       <div className="sticker-grid">
         {STICKERS.map((st) => (
           <button key={st.id} className="sticker-btn" onClick={() => addOverlayAtPlayhead({ kind: 'sticker', sticker: st.id }, 0.4)}
-            aria-label={st.name} title={st.name}>
+            aria-label={t(st.nameKey)} title={t(st.nameKey)}>
             <img src={stickerUrl(st.id)} alt="" />
             {st.caption && <span className="sticker-caption" style={{ fontFamily: `"${st.caption.font}"`, color: st.caption.color }}>{st.caption.text}</span>}
           </button>

@@ -9,7 +9,7 @@ import { clipDuration, clipStarts, formatTime, musicEnd, projectDuration, clamp 
 import { dropIndex, moveClip, trimClip, trimMusic, updateMusic, updateOverlay } from '../model/timeline';
 import type { MediaInfo, MusicClip, Overlay, Project, VideoClip } from '../model/types';
 import type { Thumb } from '../media/thumbnails';
-import { t } from '../i18n/strings';
+import { t, useLocale } from '../i18n/strings';
 import { Icon } from './icons';
 import { pausePlayback } from './App';
 import { MIN_CLIP } from '../model/time';
@@ -468,6 +468,7 @@ function Handles({ id, kind, name }: { id: string; kind: string; name: string })
 
 const ClipItem = memo(function ClipItem(props: { clip: VideoClip; media?: MediaInfo; left: number; pps: number; selected: boolean; offset: number }) {
   const { clip, media, left, pps, selected, offset } = props;
+  useLocale(); // memoised: subscribe so its labels follow language changes
   const [thumbs, setThumbs] = useState<Thumb[]>([]);
   useEffect(() => {
     let live = true;

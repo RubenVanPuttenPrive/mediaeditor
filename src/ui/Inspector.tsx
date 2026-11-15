@@ -186,7 +186,7 @@ function OverlayInspector({ o }: { o: Overlay }) {
 }
 
 export const overlayName = (o: Overlay) =>
-  o.kind === 'text' ? o.text.split('\n')[0] || t('inspect.text') : o.kind === 'emoji' ? o.label : (STICKERS.find((x) => x.id === o.sticker)?.name ?? o.sticker);
+  o.kind === 'text' ? o.text.split('\n')[0] || t('inspect.text') : o.kind === 'emoji' ? o.label : (() => { const d = STICKERS.find((x) => x.id === o.sticker); return d ? t(d.nameKey) : o.sticker; })();
 
 export function removeOverlay(id: string) {
   const s = useEditor.getState();

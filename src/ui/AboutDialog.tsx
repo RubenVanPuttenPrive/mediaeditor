@@ -1,12 +1,30 @@
-import { t } from '../i18n/strings';
+import { useState } from 'react';
+import { LOCALES, deviceLocale, localePreference, setLocale, t, useLocale } from '../i18n/strings';
 import { Dialog } from './Dialog';
 import { BUILTIN_TRACKS } from '../render/music';
 import { newProject } from './TopBar';
 import { Icon } from './icons';
 
+function LanguagePicker() {
+  useLocale();
+  const [pref, setPref] = useState(localePreference());
+  const device = LOCALES.find((l) => l.code === deviceLocale())?.name ?? 'English';
+  return (
+    <div className="field inline language-field">
+      <label htmlFor="language">{t('lang.label')}</label>
+      <select id="language" className="language-select" value={pref}
+        onChange={(e) => { setPref(e.target.value); void setLocale(e.target.value); }}>
+        <option value="auto">{t('lang.auto', { name: device })}</option>
+        {LOCALES.map((l) => <option key={l.code} value={l.code} lang={l.code}>{l.name}</option>)}
+      </select>
+    </div>
+  );
+}
+
 export default function AboutDialog({ onClose }: { onClose: () => void }) {
   return (
     <Dialog title={t('about.title')} onClose={onClose} className="about-sheet">
+      <LanguagePicker />
       <p>{t('about.body')}</p>
       <p>{t('about.storage')}</p>
       <button className="btn" onClick={async () => { if (await newProject()) onClose(); }}>

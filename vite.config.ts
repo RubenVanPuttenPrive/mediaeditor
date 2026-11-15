@@ -32,13 +32,13 @@ export default defineConfig({
       workbox: {
         // App shell, JS chunks (including the lazy encoder), fonts, stickers, emoji index.
         globPatterns: ['**/*.{js,css,html,woff2,png,svg,json,webmanifest}'],
-        globIgnores: ['emoji/svg/**', 'ffmpeg/**', 'music/**'],
+        globIgnores: ['emoji/svg/**', 'emoji/index-*.json', 'ffmpeg/**', 'music/**'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: base + 'index.html',
         runtimeCaching: [
           {
-            // Emoji images, bundled music and the ffmpeg fallback core: cached the first time they are used.
-            urlPattern: ({ url }) => /\/(emoji\/svg|ffmpeg|music)\//.test(url.pathname),
+            // Emoji images and search indexes, bundled music and the ffmpeg fallback core: cached on first use.
+            urlPattern: ({ url }) => /\/(emoji\/svg\/|emoji\/index-|ffmpeg\/|music\/)/.test(url.pathname),
             handler: 'CacheFirst',
             options: {
               cacheName: 'lazy-assets',

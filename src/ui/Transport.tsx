@@ -39,7 +39,7 @@ export function Transport() {
         </button>
         <TimeReadout />
       </div>
-      <div className="tools" role="toolbar" aria-label="Editing tools">
+      <div className="tools" role="toolbar" aria-label={t('tool.toolbar')}>
         <ToolButton icon="plus" label={t('tool.addMedia')} onClick={() => void importToTimeline()} />
         <ToolButton icon="split" label={t('tool.split')} shortcut="S" onClick={splitAtPlayhead} disabled={!hasContent} />
         <ToolButton icon="trash" label={t('tool.delete')} shortcut="Delete" onClick={deleteSelection} disabled={!selection} />

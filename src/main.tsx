@@ -10,6 +10,10 @@ import '@fontsource/roboto-slab/700.css';
 import './ui/styles.css';
 import { App } from './ui/App';
 import { registerServiceWorker } from './lib/pwa';
+import { initLocale } from './i18n/strings';
+
+// Load the device's language (or the one picked in About) before the first paint.
+await initLocale();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
