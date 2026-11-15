@@ -3,9 +3,9 @@ import { useEditor, getProject } from '../state/store';
 import { addMusic, addOverlay, musicFromMedia, newId } from '../model/timeline';
 import { projectDuration } from '../model/time';
 import type { Overlay, TextOverlay } from '../model/types';
-import { STICKERS } from '../render/stickers';
+import { STICKERS, STICKER_CATEGORIES, type StickerCategory } from '../render/stickers';
 import { BUILTIN_TRACKS, builtinMedia, trackUrl } from '../render/music';
-import { stickerUrl } from '../render/assets';
+import { stickerThumbnail, stickerUrl } from '../render/assets';
 import { t } from '../i18n/strings';
 import { formatTime } from '../model/time';
 import { Dialog } from './Dialog';
@@ -45,15 +45,59 @@ export function addOverlayAtPlayhead(o: NewOverlay, scale = 0.28) {
   s.openPanel(null);
 }
 
+const STICKER_TAB_KEY = 'mediaeditor.stickerTab';
+const readTab = (): StickerCategory => {
+  try {
+    const v = localStorage.getItem(STICKER_TAB_KEY) as StickerCategory | null;
+    return v && STICKER_CATEGORIES.some((c) => c.id === v) ? v : 'faces';
+  } catch {
+    return 'faces';
+  }
+};
+
+/** Shows the sticker as it will look in the video (captions included); plain SVG until that is ready. */
+function StickerThumb({ id }: { id: string }) {
+  const [src, setSrc] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    void stickerThumbnail(id).then((u) => live && setSrc(u));
+    return () => {
+      live = false;
+    };
+  }, [id]);
+  return <img src={src ?? stickerUrl(id)} alt="" draggable={false} />;
+}
+
+const STICKER_SCALE: Record<StickerCategory, number> = { faces: 0.35, hats: 0.4, reactions: 0.42, fun: 0.3 };
+
 function StickerPanel({ onClose }: { onClose: () => void }) {
+  const [tab, setTab] = useState<StickerCategory>(readTab);
+  const choose = (c: StickerCategory) => {
+    setTab(c);
+    try {
+      localStorage.setItem(STICKER_TAB_KEY, c);
+    } catch {
+      /* storage unavailable */
+    }
+  };
+  const list = STICKERS.filter((st) => st.category === tab);
   return (
-    <Dialog title={t('stickers.title')} onClose={onClose}>
-      <div className="sticker-grid">
-        {STICKERS.map((st) => (
-          <button key={st.id} className="sticker-btn" onClick={() => addOverlayAtPlayhead({ kind: 'sticker', sticker: st.id }, 0.4)}
+    <Dialog title={t('stickers.title')} onClose={onClose} className="sticker-sheet">
+      <div className="sticker-tabs" role="tablist" aria-label={t('stickers.title')}>
+        {STICKER_CATEGORIES.map((c) => (
+          <button key={c.id} role="tab" aria-selected={tab === c.id} className={tab === c.id ? 'on' : ''}
+            onClick={() => choose(c.id)} id={`sticker-tab-${c.id}`} aria-controls="sticker-panel">
+            <img src={stickerUrl(c.icon)} alt="" width="26" height="26" />
+            <span>{t(c.labelKey)}</span>
+          </button>
+        ))}
+      </div>
+      <div className="sticker-grid" role="tabpanel" id="sticker-panel" aria-labelledby={`sticker-tab-${tab}`}>
+        {list.map((st) => (
+          <button key={st.id} className="sticker-btn" data-sticker={st.id}
+            onClick={() => addOverlayAtPlayhead({ kind: 'sticker', sticker: st.id }, STICKER_SCALE[st.category])}
             aria-label={t(st.nameKey)} title={t(st.nameKey)}>
-            <img src={stickerUrl(st.id)} alt="" />
-            {st.caption && <span className="sticker-caption" style={{ fontFamily: `"${st.caption.font}"`, color: st.caption.color }}>{st.caption.text}</span>}
+            <StickerThumb id={st.id} />
           </button>
         ))}
       </div>

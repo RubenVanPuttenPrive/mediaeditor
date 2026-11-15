@@ -22,7 +22,8 @@ test('import, split, add emoji, sticker and music, export a playable MP4', async
   await page.getByRole('searchbox', { name: 'Search emoji' }).fill('party popper');
   await page.locator('.emoji-btn').first().click();
   await page.getByRole('button', { name: 'Stickers', exact: true }).click();
-  await page.getByRole('button', { name: 'Heart' }).click();
+  await page.getByRole('tab', { name: 'Fun stuff' }).click();
+  await page.getByRole('button', { name: 'Heart', exact: true }).click();
   await expect(page.locator('.item.overlay')).toHaveCount(3);
 
   // Bundled music with a fade-out.

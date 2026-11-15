@@ -25,12 +25,12 @@ export const FONTS = [
 export const fontWeight = (font: string) => FONTS.find((f) => f.id === font)?.weight ?? 700;
 export const fontCss = (font: string, px: number) => `${fontWeight(font)} ${px}px "${font}", system-ui, sans-serif`;
 
-async function rasterize(url: string, aspect: number, caption?: StickerCaption): Promise<Raster | null> {
+async function rasterize(url: string, aspect: number, caption?: StickerCaption, size = RASTER): Promise<Raster | null> {
   const res = await fetch(url);
   if (!res.ok) return null;
   let svg = await res.text();
-  const w = aspect >= 1 ? RASTER : Math.round(RASTER * aspect);
-  const h = aspect >= 1 ? Math.round(RASTER / aspect) : RASTER;
+  const w = aspect >= 1 ? size : Math.round(size * aspect);
+  const h = aspect >= 1 ? Math.round(size / aspect) : size;
   // Give the SVG an explicit size: Safari and Firefox refuse to draw SVGs without intrinsic dimensions.
   svg = svg.replace(/<svg\b([^>]*)>/, (_m, attrs: string) => {
     const cleaned = attrs.replace(/\s(width|height)="[^"]*"/g, '');
@@ -107,4 +107,21 @@ export async function ensureOverlayAssets(overlays: Overlay[]): Promise<void> {
     jobs.push(p);
   }
   await Promise.all(jobs);
+}
+
+const thumbs = new Map<string, Promise<string | null>>();
+
+/** Small PNG of a sticker (caption included) for the picker, drawn exactly like the video overlay. */
+export function stickerThumbnail(id: string): Promise<string | null> {
+  let p = thumbs.get(id);
+  if (!p) {
+    const def = STICKERS.find((d) => d.id === id);
+    p = def
+      ? rasterize(stickerUrl(id), def.aspect, def.caption, 192)
+        .then((c) => (c && 'toDataURL' in c ? c.toDataURL('image/png') : null))
+        .catch(() => null)
+      : Promise.resolve(null);
+    thumbs.set(id, p);
+  }
+  return p;
 }

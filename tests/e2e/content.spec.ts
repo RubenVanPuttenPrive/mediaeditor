@@ -51,7 +51,8 @@ test('1080p export contains the overlays at their times, muted original, music w
   await page.locator('.emoji-btn').first().click();
   await seek(page, 3);
   await page.getByRole('button', { name: 'Stickers', exact: true }).click();
-  await page.getByRole('button', { name: 'Heart' }).click();
+  await page.getByRole('tab', { name: 'Fun stuff' }).click();
+  await page.getByRole('button', { name: 'Heart', exact: true }).click();
   await expect(page.locator('.item.overlay')).toHaveCount(2);
   // The sticker is selected after adding: shorten it to 3–4.5 s so nothing is shown at the end.
   await page.getByLabel('Duration').fill('1.5');
